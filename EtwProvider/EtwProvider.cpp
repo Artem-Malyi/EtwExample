@@ -11,7 +11,43 @@ TRACELOGGING_DEFINE_PROVIDER(g_traceLoggingProvider, "ExampleTraceLoggingProvide
 
 using namespace std;
 
+void TestExampleTraceLoggingProvider();
+void TestLoggingToEventViewer();
+
 int main()
+{
+    TestLoggingToEventViewer();
+
+    TestExampleTraceLoggingProvider();
+
+    return 0;
+}
+
+void TestLoggingToEventViewer()
+{
+    // https://docs.microsoft.com/en-us/windows/win32/eventlog/reporting-an-event
+
+    // create registry keys for ACLing described on MSDN: http://msdn2.microsoft.com/en-us/library/aa363648.aspx
+
+    const PCWSTR wsSourceName = L"rsAmsiProvider";
+    HANDLE hEventLog = RegisterEventSource(nullptr, wsSourceName);
+    if (!hEventLog) {
+        DWORD lastError = GetLastError();
+        return;
+    }
+
+    PCWSTR wsMessage = L"test event log from C++";
+    BOOL bRes = ReportEvent(hEventLog, EVENTLOG_ERROR_TYPE, 0, 0, nullptr, 1, 0, &wsMessage, nullptr);
+    if (!bRes) {
+        DWORD lastError = GetLastError();
+        DeregisterEventSource(hEventLog);
+        return;
+    }
+
+    DeregisterEventSource(hEventLog);
+}
+
+void TestExampleTraceLoggingProvider()
 {
     TraceLoggingRegister(g_traceLoggingProvider);
     TraceLoggingWrite(g_traceLoggingProvider, "Started");
@@ -24,16 +60,16 @@ int main()
     wstring content = L"echo hello!";
 
     while (true) {
-		TraceLoggingWrite(
-			g_traceLoggingProvider, "ScriptBlockAttributes",
-			TraceLoggingValue(scanRequestNumber, "ScanId"),
-			TraceLoggingWideString(appName.c_str(), "AppName"),
-			TraceLoggingWideString(contentName.c_str(), "ContentName"),
-			TraceLoggingUInt64(contentSize, "ContentSize"),
-			TraceLoggingPointer(session, "Session"),
-			TraceLoggingPointer(content.c_str(), "ContentAddress"),
-			TraceLoggingWideString(content.c_str(), "Content")
-		);
+        TraceLoggingWrite(
+            g_traceLoggingProvider, "ScriptBlockAttributes",
+            TraceLoggingValue(scanRequestNumber, "ScanId"),
+            TraceLoggingWideString(appName.c_str(), "AppName"),
+            TraceLoggingWideString(contentName.c_str(), "ContentName"),
+            TraceLoggingUInt64(contentSize, "ContentSize"),
+            TraceLoggingPointer(session, "Session"),
+            TraceLoggingPointer(content.c_str(), "ContentAddress"),
+            TraceLoggingWideString(content.c_str(), "Content")
+        );
 
         ++scanRequestNumber;
 
@@ -44,6 +80,4 @@ int main()
 
     TraceLoggingWrite(g_traceLoggingProvider, "Stopped");
     TraceLoggingUnregister(g_traceLoggingProvider);
-
-    return 0;
 }

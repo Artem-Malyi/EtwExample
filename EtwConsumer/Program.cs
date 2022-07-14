@@ -10,6 +10,7 @@ namespace EtwConsumer
     {
         public static string ExampleProvidernName = "ExampleTraceLoggingProvider";
         public static string ExampleProviderGuid = "253025BF-E388-4768-96AF-5CD5A6B3D9E2";
+        //                                         "2A576B87-09A7-520E-C21A-4942F0271D67"
 
         static void Main(string[] args)
         {
